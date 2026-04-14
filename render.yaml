@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: tradewhisper-backend
+    runtime: node
+    plan: starter
+    rootDir: .
+    buildCommand: npm install; npm run build
+    startCommand: npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: HSK_RPC_URL
+        value: https://testnet.hsk.xyz
+      - key: GROQ_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: EVALUATOR_MODEL
+        value: llama-3.3-70b-versatile
+      - key: ORACLE_MODE
+        value: USDC_PER_HSK
+      - key: SPREAD_BPS
+        value: 30
+      - key: MAX_REQUEST_AGE_SEC
+        value: 60
+      - key: MIN_AGENT_REPUTATION
+        value: 10
+      - key: GROQ_API_KEY
+        sync: false
+      - key: MARKET_AGENT_PRIVATE_KEY
+        sync: false
+      - key: RELAYER_PRIVATE_KEY
+        sync: false
+      - key: TRADE_ROUTER_ADDRESS
+        sync: false
+      - key: ATOMIC_SWAP_ADDRESS
+        sync: false
+      - key: REPUTATION_REGISTRY_ADDRESS
+        sync: false
+      - key: USDC_ADDRESS
+        sync: false
+      - key: HSK_TOKEN_ADDRESS
+        sync: false
+      - key: PRICE_ORACLE_ADDRESS
+        sync: false

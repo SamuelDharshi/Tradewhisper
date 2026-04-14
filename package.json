@@ -12,6 +12,7 @@
     "deploy:testnet": "hardhat run scripts/deploy.ts --network hashkeyTestnet",
     "deploy:assets:testnet": "hardhat run scripts/setupTestnetAssets.ts --network hashkeyTestnet",
     "agent:dev": "tsx src/agent/index.ts",
+    "start": "node dist/src/agent/index.js",
     "lint": "echo \"No lint config yet\"",
     "test": "hardhat test"
   },

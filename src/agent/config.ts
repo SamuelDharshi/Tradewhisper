@@ -24,9 +24,8 @@ if (!relayerPrivateKey) {
 }
 
 export const config = {
-  // Use a dedicated backend port env and intentionally ignore generic PORT
-  // to avoid clashing with frontend sessions that often set PORT=3001.
-  port: Number(process.env.BACKEND_PORT || process.env.API_PORT || 3000),
+  // Prefer dedicated backend envs locally, but support Render's dynamic PORT in production.
+  port: Number(process.env.BACKEND_PORT || process.env.API_PORT || process.env.PORT || 3000),
   rpcUrl: process.env.HSK_RPC_URL || "https://testnet.hsk.xyz",
   forceLocalAi: String(process.env.FORCE_LOCAL_AI || "false").toLowerCase() === "true",
   groqApiKey: must("GROQ_API_KEY"),
