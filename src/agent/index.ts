@@ -214,6 +214,14 @@ function startApi(): void {
   app.use(cors());
   app.use(express.json());
 
+  app.get("/", (_req, res) => {
+    res.json({
+      ok: true,
+      service: "TradeWhisper backend",
+      message: "Use /health for service status and /parse-intent for intent parsing."
+    });
+  });
+
   app.get("/health", (_req, res) => {
     res.json({
       ok: true,
