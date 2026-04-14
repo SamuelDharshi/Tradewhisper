@@ -651,6 +651,7 @@ export function TradeChat({ autoConnectWallet = false }: TradeChatProps) {
             <a href="/trade">Trade</a>
             <a href="/history">History</a>
             <a href="/leaderboard">Leaderboard</a>
+            <a href="/docs">Docs</a>
           </div>
         </div>
 
