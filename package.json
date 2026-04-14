@@ -7,6 +7,7 @@
     "build": "tsc -p tsconfig.json",
     "clean": "hardhat clean",
     "compile": "hardhat compile",
+    "predev": "node scripts/freePort.js 3000",
     "dev": "npm run agent:dev",
     "deploy:testnet": "hardhat run scripts/deploy.ts --network hashkeyTestnet",
     "deploy:assets:testnet": "hardhat run scripts/setupTestnetAssets.ts --network hashkeyTestnet",
@@ -21,6 +22,7 @@
     "dotenv": "^16.4.5",
     "ethers": "^6.13.2",
     "express": "^4.19.2",
+    "kill-port": "^2.0.1",
     "openai": "^4.56.0",
     "zod": "^3.23.8"
   },

@@ -22,6 +22,7 @@ const groqClient = new OpenAI({
 });
 const seen = new Set<string>();
 const settled = new Set<string>();
+const evaluating = new Set<string>();
 
 const OFFER_TYPES = {
   Offer: [
@@ -90,6 +91,9 @@ async function handleTradeRequested(
     const receipt = await tx.wait();
 
     console.log(`[MarketAgent] Offer submitted ${requestId} tx=${receipt?.hash}`);
+
+    // Evaluate immediately after offer is mined instead of waiting on event timing.
+    await handleTradeOffered(requestId, marketAgentWallet.address, amountOut, offerDeadline, signature);
   } catch (error) {
     console.error(`[MarketAgent] Failed to process request ${requestId}`, error);
   }
@@ -102,9 +106,10 @@ async function handleTradeOffered(
   offerDeadline: bigint,
   signature: string
 ): Promise<void> {
-  if (settled.has(requestId)) {
+  if (settled.has(requestId) || evaluating.has(requestId)) {
     return;
   }
+  evaluating.add(requestId);
 
   try {
     const req = await router.getRequest(requestId);
@@ -160,6 +165,8 @@ async function handleTradeOffered(
     console.log(`[UserAgent] ${decision.chatMessageToUser}`);
   } catch (error) {
     console.error(`[UserAgent] Failed to evaluate/execute offer ${requestId}`, error);
+  } finally {
+    evaluating.delete(requestId);
   }
 }
 
@@ -171,6 +178,7 @@ async function startAgent(): Promise<void> {
   console.log(`[Relayer] Running as ${relayerWallet.address}`);
   console.log(`[MarketAgent] Router ${config.tradeRouterAddress}`);
   console.log(`[MarketAgent] Oracle ${config.oracleAddress}`);
+  console.log(`[Policy] MIN_AGENT_REPUTATION=${config.minAgentReputation} SPREAD_BPS=${config.spreadBps}`);
 
   router.on(
     "TradeRequested",
@@ -215,7 +223,9 @@ function startApi(): void {
       reputation: config.reputationRegistryAddress,
       oracle: config.oracleAddress,
       agent: marketAgentWallet.address,
-      relayer: relayerWallet.address
+      relayer: relayerWallet.address,
+      minAgentReputation: config.minAgentReputation,
+      spreadBps: config.spreadBps
     });
   });
 

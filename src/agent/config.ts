@@ -24,8 +24,11 @@ if (!relayerPrivateKey) {
 }
 
 export const config = {
-  port: Number(process.env.PORT || 3000),
+  // Use a dedicated backend port env and intentionally ignore generic PORT
+  // to avoid clashing with frontend sessions that often set PORT=3001.
+  port: Number(process.env.BACKEND_PORT || process.env.API_PORT || 3000),
   rpcUrl: process.env.HSK_RPC_URL || "https://testnet.hsk.xyz",
+  forceLocalAi: String(process.env.FORCE_LOCAL_AI || "false").toLowerCase() === "true",
   groqApiKey: must("GROQ_API_KEY"),
   groqBaseUrl: process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1",
   groqModel: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",

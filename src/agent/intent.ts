@@ -140,12 +140,37 @@ function fallbackParseIntent(userInput: string): ParsedIntent {
   };
 }
 
+function guaranteedFallbackIntent(userInput: string): ParsedIntent {
+  const candidate = fallbackParseIntent(userInput);
+  const validated = ParsedIntentSchema.safeParse(candidate);
+  if (validated.success) {
+    return validated.data;
+  }
+
+  return {
+    intent: "UNKNOWN",
+    tokenIn: null,
+    amountIn: null,
+    tokenOut: null,
+    minAmountOut: null,
+    userMessage: "I could not fully parse your request yet.",
+    needsClarification: true,
+    clarificationQuestion: "Please specify the exact trade amount and pair."
+  };
+}
+
 export async function parseIntent(client: OpenAI, userInput: string, model: string): Promise<ParsedIntent> {
-  if (!groqIntentEnabled) {
-    return fallbackParseIntent(userInput);
+  const forceLocal = String(process.env.FORCE_LOCAL_AI || "false").toLowerCase() === "true";
+
+  if (forceLocal) {
+    return guaranteedFallbackIntent(userInput);
   }
 
   try {
+    if (!groqIntentEnabled) {
+      return guaranteedFallbackIntent(userInput);
+    }
+
     const response = await client.chat.completions.create({
       model,
       temperature: 0,
@@ -164,14 +189,18 @@ export async function parseIntent(client: OpenAI, userInput: string, model: stri
     const parsed = JSON.parse(extractJson(content));
     return ParsedIntentSchema.parse(parsed);
   } catch (error) {
-    if (isPermissionDenied(error)) {
-      groqIntentEnabled = false;
-      console.warn("[IntentParser] Groq returned 403. Switching to local fallback parser for this session.");
-    } else {
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(`[IntentParser] Groq unavailable, using local fallback parser: ${message}`);
+    try {
+      if (isPermissionDenied(error)) {
+        groqIntentEnabled = false;
+        console.warn("[IntentParser] Groq returned 403. Switching to local fallback parser for this session.");
+      } else {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`[IntentParser] Groq unavailable, using local fallback parser: ${message}`);
+      }
+    } catch {
+      // Never fail parse path because of logging edge cases.
     }
-    return fallbackParseIntent(userInput);
+    return guaranteedFallbackIntent(userInput);
   }
 }
 
@@ -189,6 +218,30 @@ export async function evaluateOffer(
     minAgentReputation: number;
   }
 ): Promise<OfferDecision> {
+  const forceLocal = String(process.env.FORCE_LOCAL_AI || "false").toLowerCase() === "true";
+
+  if (forceLocal) {
+    if (input.agentReputation < input.minAgentReputation) {
+      return {
+        decision: "REJECT",
+        reason: `Agent reputation ${input.agentReputation} is below threshold ${input.minAgentReputation}`,
+        chatMessageToUser: "I rejected the offer because the market agent reputation is too low."
+      };
+    }
+    if (input.offeredAmountOut < input.targetMinOut) {
+      return {
+        decision: "REJECT",
+        reason: `Offered amount ${input.offeredAmountOut} is below user minimum ${input.targetMinOut}`,
+        chatMessageToUser: "I rejected the offer because it does not meet your minimum output."
+      };
+    }
+    return {
+      decision: "ACCEPT",
+      reason: "Offer meets minimum output and agent reputation threshold",
+      chatMessageToUser: "I accepted the offer automatically because it meets your configured trade constraints."
+    };
+  }
+
   if (!groqEvaluatorEnabled) {
     if (input.agentReputation < input.minAgentReputation) {
       return {
