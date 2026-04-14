@@ -20,3 +20,4 @@ dist/
 coverage/
 *.log
 pnpm-lock.yaml
+.vercel
