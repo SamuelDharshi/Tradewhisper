@@ -1,5 +1,7 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import hre from "hardhat";
+
+const { ethers } = hre as any;
 
 describe("TradeWhisper Backend Flow", function () {
   it("executes request -> offer -> atomic settlement -> reputation increment", async function () {
@@ -41,14 +43,14 @@ describe("TradeWhisper Backend Flow", function () {
 
     const requestReceipt = await requestTx.wait();
     const requestEvent = requestReceipt?.logs
-      .map((log) => {
+      .map((log: any) => {
         try {
           return router.interface.parseLog(log);
         } catch {
           return null;
         }
       })
-      .find((evt) => evt?.name === "TradeRequested");
+      .find((evt: any) => evt?.name === "TradeRequested");
 
     expect(requestEvent).to.not.equal(undefined);
     const requestId = requestEvent!.args.requestId;
@@ -90,8 +92,21 @@ describe("TradeWhisper Backend Flow", function () {
 
     await router.connect(agent).submitOffer(requestId, amountOut, offerDeadline, signature);
 
-    await expect(atomic.connect(relayer).executeTradeFor(requestId, user.address, amountOut, offerDeadline, agent.address, signature))
-      .to.emit(atomic, "TradeSettled");
+    const executeTx = await atomic
+      .connect(relayer)
+      .executeTradeFor(requestId, user.address, amountOut, offerDeadline, agent.address, signature);
+    const executeReceipt = await executeTx.wait();
+    const settledEvent = executeReceipt?.logs
+      .map((log: any) => {
+        try {
+          return atomic.interface.parseLog(log);
+        } catch {
+          return null;
+        }
+      })
+      .find((evt: any) => evt?.name === "TradeSettled");
+
+    expect(settledEvent).to.not.equal(undefined);
 
     expect(await usdc.balanceOf(agent.address)).to.equal(amountIn);
     expect(await hsk.balanceOf(user.address)).to.equal(amountOut);
@@ -119,14 +134,14 @@ describe("TradeWhisper Backend Flow", function () {
       .requestTrade(await usdc.getAddress(), await hsk.getAddress(), 1_000_000n, 1n, requestDeadline, 77n);
     const receipt = await tx.wait();
     const event = receipt?.logs
-      .map((log) => {
+      .map((log: any) => {
         try {
           return router.interface.parseLog(log);
         } catch {
           return null;
         }
       })
-      .find((evt) => evt?.name === "TradeRequested");
+      .find((evt: any) => evt?.name === "TradeRequested");
 
     const requestId = event!.args.requestId;
 
