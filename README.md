@@ -46,7 +46,6 @@ TradeWhisper is a conversational OTC protocol built for HashKey Chain. A user ty
 - TradeRouter: request and offer message bus
 - AtomicSwap: signature verification and atomic execution
 - ReputationRegistry: agent score state
-- MockUSDC and MockPriceOracle for testnet demo flow
 
 ## End-to-End Trade Flow
 
