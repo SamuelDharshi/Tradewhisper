@@ -144,7 +144,22 @@ export function TradeChat({ autoConnectWallet = false }: TradeChatProps) {
     }
   ]);
 
-  const apiBase = useMemo(() => process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000", []);
+  const apiBase = useMemo(() => {
+    const configured = process.env.NEXT_PUBLIC_BACKEND_URL?.trim();
+    if (configured) {
+      return configured;
+    }
+
+    const isLocalHost =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+    if (isLocalHost) {
+      return "http://localhost:3000";
+    }
+
+    return "https://tradewhisper-backend.onrender.com";
+  }, []);
 
   const routerAddress = useMemo(
     () => process.env.NEXT_PUBLIC_TRADE_ROUTER_ADDRESS || "0xEEb42D6F9E90Bc13BBb0077d9CAC972a48C59d24",
