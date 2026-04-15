@@ -5,7 +5,7 @@ Just whisper your trade. The chain handles the rest.
 TradeWhisper is a conversational OTC protocol built for HashKey Chain. A user types a natural-language request like "sell 10 USDC for HSK", and the system turns that into a real on-chain request, autonomous market response, and atomic settlement.
 
 ## Project Summary (PRD Aligned)
-
+	
 - Primary track fit: AI
 - Secondary track fit: DeFi
 - Core idea: remove DeFi UX friction while keeping full on-chain verifiability
@@ -34,42 +34,169 @@ TradeWhisper is a conversational OTC protocol built for HashKey Chain. A user ty
 
 ### 2) Backend Agent/API Layer (Node.js + TypeScript)
 
-- Runtime entry: [src/agent/index.ts](src/agent/index.ts)
-- Config and env loading: [src/agent/config.ts](src/agent/config.ts)
-- Intent parser + evaluator logic: [src/agent/intent.ts](src/agent/intent.ts)
-- Pricing logic: [src/agent/pricing.ts](src/agent/pricing.ts)
-- HTTP endpoints include `/health` and `/parse-intent`
-- Also runs long-lived on-chain listeners for trade request/offer events
+# TradeWhisper
 
-### 3) Smart Contract Layer (HashKey testnet, chainId 133)
+## Just whisper your trade. The chain handles the rest.
 
-- TradeRouter: request and offer message bus
-- AtomicSwap: signature verification and atomic execution
-- ReputationRegistry: agent score state
+TradeWhisper makes OTC trading feel like sending a message.
 
-## End-to-End Trade Flow
+Instead of navigating complex DeFi forms, users describe what they want in plain language, receive on-chain offers, and complete settlement atomically on HashKey Chain.
 
-1. User sends trade intent in chat.
-2. AI parser returns normalized trade fields.
-3. Frontend publishes request on-chain via TradeRouter.
-4. Market agent detects request and computes quote.
-5. Agent submits signed offer on-chain.
-6. Evaluator policy accepts or rejects by constraints/reputation.
-7. AtomicSwap executes final settlement when accepted.
-8. Reputation updates and all tx hashes are visible on explorer.
+For judges, this creates the aha moment quickly:
 
-## Tech Stack
+- Natural-language input
+- Real on-chain lifecycle
+- Verifiable transaction trail
+- Atomic execution with transparent reputation
 
-- Chain: HashKey testnet
-- Contracts: Solidity + Hardhat
-- Backend: Node.js, TypeScript, Express, ethers
-- AI: OpenAI-compatible API interface (Groq endpoint configured)
-- Frontend: Next.js, React, Tailwind, ethers v6
-- Wallet: MetaMask (HashKey network)
+---
 
-## Local Run
+## Why This Matters
 
-### 1) Install
+DeFi is powerful, but execution UX still excludes many users.
+
+- Traditional DEX flows require deep protocol knowledge
+- OTC coordination often happens in fragmented off-chain channels
+- Trust and auditability are hard to prove in real time
+
+TradeWhisper solves this by combining conversational intent + on-chain execution into one coherent flow.
+
+---
+
+## What TradeWhisper Does
+
+Users can write intents like:
+
+"Sell 10 USDC for HSK, minimum 33 HSK"
+
+The system then:
+
+1. Parses intent into structured trade parameters
+2. Publishes a request on-chain
+3. Receives and evaluates market-maker offers
+4. Executes accepted offers atomically
+5. Shows explorer-verifiable transaction status in UI
+
+---
+
+## Architecture Overview
+
+### Frontend
+
+- Next.js interface for chat, wallet connect, lifecycle visibility
+- Routes: Home, Trade, History, Leaderboard, Docs
+
+### Backend + Agents
+
+- Intent parsing API
+- Market agent listening to request events and submitting signed offers
+- Evaluation logic and execution trigger path
+
+### On-Chain Protocol
+
+- TradeRouter: request and offer coordination
+- AtomicSwap: settlement execution
+- ReputationRegistry: market-maker reputation updates
+
+---
+
+## Sequence Diagram
+
+```mermaid
+sequenceDiagram
+	autonumber
+	participant U as User
+	participant F as TradeWhisper Frontend
+	participant B as Backend API
+	participant R as TradeRouter (Contract)
+	participant M as Market Agent
+	participant A as AtomicSwap (Contract)
+	participant X as Explorer
+
+	U->>F: Enter natural language trade intent
+	F->>B: POST /parse-intent
+	B-->>F: Structured intent JSON
+	U->>F: Confirm and sign approval/request tx
+	F->>R: requestTrade(...)
+	R-->>X: TradeRequested event + tx hash
+	M->>R: submitOffer(...signed offer...)
+	R-->>X: TradeOffered event + tx hash
+	M->>A: executeTradeFor(...)
+	A-->>R: TradeExecuted / settlement-linked event
+	A-->>X: Settlement tx hash
+	F-->>U: Live status + explorer links + history update
+```
+
+---
+
+## Deployed Contract Addresses (HashKey Testnet)
+
+| Contract | Address |
+| --- | --- |
+| TradeRouter | `0xEEb42D6F9E90Bc13BBb0077d9CAC972a48C59d24` |
+| AtomicSwap | `0x71e7763BB53AEf04CbC5Ee784A146e7Eb08A019b` |
+| ReputationRegistry | `0x7C5e03ea5185bF4A6E4DDc6fd6B7Fba75b760471` |
+| USDC Token | `0xCA886ebef3d708fA61bD3b3606F31c904258ec3A` |
+| HSK Token | `0x55f11eD5DF8a2d78cC69a8e39464841e86F278a3` |
+| Price Oracle | `0x7642cf590101545ffE78B2Ec07504e2b7C9C2998` |
+
+Explorer:
+
+- https://testnet-explorer.hsk.xyz
+
+---
+
+## Live URLs
+
+- Frontend: https://tradewhisper.vercel.app
+- Backend: https://tradewhisper-backend.onrender.com
+- Backend health: https://tradewhisper-backend.onrender.com/health
+
+---
+
+## Judge Quick Verification Runbook
+
+1. Open https://tradewhisper.vercel.app/trade
+2. Connect MetaMask on HashKey Testnet (Chain ID 133)
+3. Click Get 100 Test USDC
+4. Enter: "Sell 10 USDC for HSK. I want at least 33 HSK."
+5. Approve wallet transaction when prompted
+6. Observe request, offer, and execution lifecycle in chat
+7. Open transaction links and verify events on HashKey explorer
+
+---
+
+## Key Product Features
+
+- Conversational OTC interaction (plain language)
+- Structured intent parsing and confirmation
+- Contract-based request and offer lifecycle
+- Atomic settlement
+- Reputation-aware market-maker behavior
+- Trade history and leaderboard visibility
+- Explorer-native proof for every critical step
+
+---
+
+## Technology Stack
+
+- Blockchain: HashKey Chain Testnet (EVM)
+- Smart contracts: Solidity + Hardhat
+- Backend: Node.js + TypeScript + Express + ethers
+- Frontend: Next.js + React + Tailwind + ethers v6
+- Wallet: MetaMask
+
+---
+
+## Try It Locally
+
+### Prerequisites
+
+- Node.js 18+
+- MetaMask
+- HashKey testnet configuration in wallet
+
+### Setup
 
 ```bash
 npm install
@@ -78,72 +205,44 @@ npm install
 cd ..
 ```
 
-### 2) Configure env
+### Environment
 
-- Backend env template: [.env.example](.env.example)
-- Frontend env template: [TradeWhisperFrontend/.env.local.example](TradeWhisperFrontend/.env.local.example)
+- Backend template: `.env.example`
+- Frontend template: `TradeWhisperFrontend/.env.local.example`
 
-### 3) Compile and deploy contracts
-
-```bash
-npm run compile
-npm run deploy:testnet
-```
-
-### 4) Start backend
+### Start Backend
 
 ```bash
 npm run dev
 ```
 
-Health check:
-
-```bash
-curl http://localhost:3000/health
-```
-
-### 5) Start frontend
+### Start Frontend
 
 ```bash
 cd TradeWhisperFrontend
 npm run dev
 ```
 
-## Deployment
+### Open
 
-### Frontend (Vercel)
+- http://localhost:3001/trade
 
-- Live URL: https://tradewhisper-frontend.vercel.app
-- Vercel project is already linked in [TradeWhisperFrontend/.vercelignore](TradeWhisperFrontend/.vercelignore)
+---
 
-### Backend (Render)
+## API Endpoints
 
-- Blueprint file: [render.yaml](render.yaml)
-- Build command: `npm install; npm run build`
-- Start command: `npm run start`
-- Health path: `/health`
+- `GET /` service info
+- `GET /health` live runtime status and address config
+- `POST /parse-intent` intent parsing endpoint
 
-Required secret env vars on Render:
+---
 
-- GROQ_API_KEY
-- MARKET_AGENT_PRIVATE_KEY
-- RELAYER_PRIVATE_KEY
-- TRADE_ROUTER_ADDRESS
-- ATOMIC_SWAP_ADDRESS
-- REPUTATION_REGISTRY_ADDRESS
-- USDC_ADDRESS
-- HSK_TOKEN_ADDRESS
-- PRICE_ORACLE_ADDRESS
+## Submission Positioning (Hackathon)
 
-## Success Metrics (from PRD)
+TradeWhisper demonstrates a practical AI + DeFi infrastructure narrative:
 
-- Live demo trades: >= 5
-- Parse accuracy target: >= 95%
-- Settlement latency target: < 15s
-- First-time chat-to-trade target: < 60s
+- AI as the user interaction and decision layer
+- DeFi contracts as the trust and settlement layer
+- Real-time, explorer-verifiable lifecycle for transparent judging
 
-## Notes
-
-- Backend supports `BACKEND_PORT`, `API_PORT`, and platform `PORT`.
-- Keep private keys and API keys out of git.
-- Frontend details are in [TradeWhisperFrontend/README.md](TradeWhisperFrontend/README.md).
+This is not just a UI concept, but a full protocol flow from user intent to settled on-chain state.
