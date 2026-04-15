@@ -28,11 +28,6 @@ const logos: Record<string, React.ReactNode> = {
       <path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.004-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.762a1.005 1.005 0 0 0-1.001-1.005zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24.017 12.49V1.005A1.005 1.005 0 0 0 23.013 0z"/>
     </svg>
   ),
-  "AWS S3": (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-      <path d="M11.87 0l.36.21v23.18l-.36.21-9.56-4.54V4.54L11.87 0zm.79.21l9.56 4.54v14.5l-9.56 4.54V.21zM5.87 16.26l5.21 2.48v-4.96l-5.21-1.02v3.5zm0-4.2l5.21 1.02V8.12L5.87 10.6v1.46zm0-2.22l5.21-2.48V3.4l-5.21 2.48v3.96zm7 6.42l5.21-2.48V10.6l-5.21 1.02v4.64zm0-5.42l5.21-1.02V5.88l-5.21 2.48v2.48z"/>
-    </svg>
-  ),
   "Google Drive": (
     <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
       <path d="M6.28 0l5.76 9.97H0L6.28 0zm11.44 0L24 9.97h-5.73L12.52 0h5.2zm1.16 10.82L24 19.94 17.72 24l-3.21-5.56 4.37-7.62zm-9.96.12L12 13.5l3.08-2.56H8.92zm-4.13 0L0 19.94l6.28 4.06 6.72-11.64-3.21-2.44zM12 14.06l-5.52 9.57h11.04L12 14.06z"/>
@@ -71,7 +66,7 @@ const integrations = [
   { name: "Slack", category: "Comms" },
   { name: "GitHub", category: "Code" },
   { name: "Jira", category: "PM" },
-  { name: "AWS S3", category: "Storage" },
+
   { name: "Google Drive", category: "Docs" },
   { name: "Salesforce", category: "CRM" },
   { name: "HubSpot", category: "Marketing" },
@@ -204,28 +199,6 @@ export function IntegrationsSection() {
           ))}
         </div>
 
-        {/* Bottom stats row */}
-        <div className={`flex flex-wrap items-center justify-between gap-8 pt-12 border-t border-foreground/10 transition-all duration-1000 delay-500 pb-32 lg:pb-40 ${
-          isVisible ? "opacity-100" : "opacity-0"
-        }`}>
-          <div className="flex flex-wrap gap-12">
-            {[
-              { value: "HashKey", label: "Native testnet" },
-              { value: "EIP-712", label: "Signed offers" },
-              { value: "Atomic", label: "Single-tx settlement" },
-            ].map((stat) => (
-              <div key={stat.label} className="flex items-baseline gap-3">
-                <span className="text-3xl font-display">{stat.value}</span>
-                <span className="text-sm text-muted-foreground">{stat.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <a href="#" className="group inline-flex items-center gap-2 text-sm font-mono text-muted-foreground hover:text-foreground transition-colors">
-            View protocol stack
-            <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
-          </a>
-        </div>
       </div>
     </section>
   );

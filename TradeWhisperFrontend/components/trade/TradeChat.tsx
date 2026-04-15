@@ -132,7 +132,7 @@ export function TradeChat({ autoConnectWallet = false }: TradeChatProps) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [connectingWallet, setConnectingWallet] = useState(false);
-  const [faucetBusy, setFaucetBusy] = useState(false);
+
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [requestActionBusy, setRequestActionBusy] = useState<Record<string, boolean>>({});
   const autoConnectTried = useRef(false);
@@ -422,32 +422,7 @@ export function TradeChat({ autoConnectWallet = false }: TradeChatProps) {
     };
   }
 
-  async function onFaucet(): Promise<void> {
-    if (faucetBusy || busy) {
-      return;
-    }
 
-    setFaucetBusy(true);
-
-    try {
-      const signer = await connectWallet();
-      const address = await signer.getAddress();
-
-      const usdc = new Contract(usdcAddress, ERC20_ABI, signer);
-      const decimals = (await usdc.decimals()) as number;
-      const tx = await usdc.mint(address, toUnits(100, decimals));
-      await tx.wait();
-
-      push("agent", `Faucet minted 100 test USDC. tx=${tx.hash}`);
-      trace("FAUCET_MINT", `Minted 100 test USDC. tx=${tx.hash}`);
-    } catch (error) {
-      const messageText = error instanceof Error ? error.message : "Faucet call failed";
-      push("agent", `Could not mint test USDC: ${messageText}`);
-      trace("FAUCET_ERROR", messageText);
-    } finally {
-      setFaucetBusy(false);
-    }
-  }
 
   async function refreshRequestStatusSilent(request: PendingRequest): Promise<void> {
     await refreshRequestStatusInternal(request);
@@ -656,15 +631,7 @@ export function TradeChat({ autoConnectWallet = false }: TradeChatProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            suppressHydrationWarning
-            onClick={() => void onFaucet()}
-            disabled={faucetBusy || busy}
-            className="rounded-xl border border-foreground/20 bg-background px-3 py-2 text-xs font-semibold transition hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {faucetBusy ? "Minting..." : "Get 100 Test USDC"}
-          </button>
+
           <button
             type="button"
             suppressHydrationWarning
