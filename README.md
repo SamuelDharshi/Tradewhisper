@@ -4,7 +4,7 @@ Just whisper your trade. The chain handles the rest.
 
 TradeWhisper is a conversational OTC protocol built for HashKey Chain. A user types a natural-language request like "sell 10 USDC for HSK", and the system turns that into a real on-chain request, autonomous market response, and atomic settlement.
 
-## Project Summary (PRD Aligned)
+## Project Summary
 	
 - Primary track fit: AI
 - Secondary track fit: DeFi
