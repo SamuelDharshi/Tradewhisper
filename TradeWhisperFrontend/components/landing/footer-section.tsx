@@ -7,7 +7,6 @@ const footerLinks = {
   Product: [
     { name: "Trade capabilities", href: "#features" },
     { name: "Trade flow", href: "#how-it-works" },
-    { name: "Access model", href: "#pricing" },
     { name: "Protocol stack", href: "#integrations" },
   ],
   Developers: [
